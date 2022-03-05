@@ -1,12 +1,17 @@
-onmessage = async ({ data: { device, canvas, format } }) => {
-  draw(device, canvas, format);
+onmessage = async ({ data: { canvas } }) => {
+  const adapter = await navigator.gpu.requestAdapter();
+  const device = await adapter?.requestDevice();
+
+  if (adapter !== null && device !== undefined) {
+    draw(adapter, device, canvas);
+  }
 };
 
-function draw(device: GPUDevice, canvas: OffscreenCanvas, format: GPUTextureFormat) {
+function draw(adapter: GPUAdapter, device: GPUDevice, canvas: OffscreenCanvas) {
   const ctx = (canvas.getContext('webgpu') as unknown) as GPUCanvasContext;
   ctx.configure({
     device,
-    format,
+    format: ctx.getPreferredFormat(adapter),
   });
 
   const colorAttachment = ctx.getCurrentTexture();
